@@ -69,8 +69,7 @@
 
     programs.nushell = {
       enable = true;
-      extraConfig = ''
-      '';
+      configFile.source = (builtins.toString ./.) + "/configs/nushell/config.nu";
       shellAliases = {
         nix-search = "nix --extra-experimental-features \"nix-command flakes\" search";
       };

@@ -1,4 +1,4 @@
-# nix_config
+# nix-config
 A repo to hold my Nix configs for my machines
 
 ## NixOS folder
