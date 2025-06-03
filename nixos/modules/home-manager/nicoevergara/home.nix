@@ -1,28 +1,15 @@
 {
   config,
   pkgs,
+  unstable-pkgs,
   lib,
+  username,
   ...
 }: {
-  imports = [
-    <home-manager/nixos>
-  ];
-
-  home-manager.useGlobalPkgs = true;
-
-  home-manager.users.nicoevergara = {pkgs, ...}: let
-    unstable = import <nixos-unstable> {
-      config = {
-        allowUnfree = true;
-      };
-    };
-  in {
-    imports = [<plasma-manager/modules>];
     nixpkgs.config.allowUnfree = true;
-    home.packages = with pkgs;
+    home.packages = (with pkgs;
       [
         anki
-        emacs
         zoom-us
         libreoffice-qt6-fresh
         chromium
@@ -32,10 +19,16 @@
         git
         usbutils
         xclip
-      ]
-      ++ [
-        unstable.filen-cli
-      ];
+        calibre
+        spotify
+        virt-manager
+      ])
+
+      ++
+
+      ([
+        unstable-pkgs.filen-cli
+      ]);
 
     systemd.user.timers.filen-sync = {
       Unit = {
@@ -62,7 +55,7 @@
       Service = {
         Type = "oneshot";
         ExecStart = ''
-          ${unstable.filen-cli}/bin/filen sync ${config.users.users.nicoevergara.home}/Documents:/
+          ${unstable-pkgs.filen-cli}/bin/filen sync /home/${username}/Documents:/
         '';
       };
     };
@@ -85,6 +78,30 @@
           };
         };
       };
+
+      input.keyboard = {
+        layouts = [
+          {layout = "us";}
+          {layout = "tr";}
+        ];
+      };
+
+      #panels = [
+      #  {
+      #    location = "bottom";
+      #    widgets = [
+      #      {
+      #        systemTray.items = {
+      #          shown = map (item: "org.kde.plasma.${item}") [
+      #            "networkmanagement"
+      #            "volume"
+      #            "keyboardlayout"
+      #          ];
+      #        };
+      #      }
+      #    ];
+      #  }
+      #];
     };
 
     programs.git = {
@@ -93,8 +110,31 @@
       userEmail = "me@nicoevergara.com";
     };
 
+    programs.emacs = {
+      enable = true;
+      package = pkgs.emacs;
+      extraPackages = epkgs:
+        with epkgs; [
+          doom
+        ];
+    };
+
+   programs.vim = {
+     enable = true;
+     settings = {
+       tabstop = 2;
+     }; 
+   };
+
+    dconf.settings = {
+      "org/virt-manager/virt-manager/connections" = {
+        autoconnect = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
+        uris = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
+      };
+    };
+
+
     programs.starship.enable = true;
 
     home.stateVersion = "24.11"; # Do not modify without reading changelogs
-  };
 }

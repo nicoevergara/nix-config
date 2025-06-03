@@ -10,7 +10,6 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ./modules/home-manager/nicoevergara/home.nix
   ];
 
   # Bootloader.
@@ -88,7 +87,7 @@
   nix.settings.experimental-features = ["nix-command"];
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
-  users.users.nicoevergara = {
+  users.users.${config.username} = {
     isNormalUser = true;
     description = "Nico Vergara";
     extraGroups = ["networkmanager" "wheel"];
@@ -145,4 +144,5 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.11"; # Did you read the comment?
+  system.autoUpgrade.enable = true;
 }
