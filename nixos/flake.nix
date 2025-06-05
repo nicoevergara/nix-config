@@ -16,28 +16,34 @@
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, nixpkgs-unstable, home-manager, plasma-manager, ... }: 
-    let
-      username = "nicoevergara";
-      system = "x86_64-linux";
-      unstable-pkgs = nixpkgs-unstable.legacyPackages.${system};
-    in { 
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        inherit system;
+  outputs = inputs @ {
+    self,
+    nixpkgs,
+    nixpkgs-unstable,
+    home-manager,
+    plasma-manager,
+    ...
+  }: let
+    username = "nicoevergara";
+    system = "x86_64-linux";
+    unstable-pkgs = nixpkgs-unstable.legacyPackages.${system};
+  in {
+    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+      inherit system;
 
-        modules = [ 
-          ./configuration.nix 
-          ({ lib, ... }: {
-            options.username = lib.mkOption {
-              type = lib.types.str;
-              default = username;
-            };
-          })
-          home-manager.nixosModules.home-manager
+      modules = [
+        ./configuration.nix
+        ({lib, ...}: {
+          options.username = lib.mkOption {
+            type = lib.types.str;
+            default = username;
+          };
+        })
+        home-manager.nixosModules.home-manager
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.sharedModules = [ plasma-manager.homeManagerModules.plasma-manager ];
+          home-manager.sharedModules = [plasma-manager.homeManagerModules.plasma-manager];
           home-manager.extraSpecialArgs = {
             inherit unstable-pkgs;
             inherit username;

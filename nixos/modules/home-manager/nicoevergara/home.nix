@@ -6,135 +6,138 @@
   username,
   ...
 }: {
-    nixpkgs.config.allowUnfree = true;
-    home.packages = (with pkgs;
-      [
-        anki
-        zoom-us
-        libreoffice-qt6-fresh
-        chromium
-        fuse3
-        alejandra
-        nmap
-        git
-        usbutils
-        xclip
-        calibre
-        spotify
-        virt-manager
-      ])
-
-      ++
-
-      ([
+  nixpkgs.config.allowUnfree = true;
+  home.packages =
+    (with pkgs; [
+      anki
+      zoom-us
+      libreoffice-qt6-fresh
+      chromium
+      fuse3
+      alejandra
+      nmap
+      git
+      usbutils
+      xclip
+      calibre
+      spotify
+      virt-manager
+    ])
+    ++ (
+      with pkgs.kdePackages; [
+        partitionmanager
+      ]
+    )
+    ++ (
+      with unstable-pkgs; [
         unstable-pkgs.filen-cli
-      ]);
+      ]
+    );
 
-    systemd.user.timers.filen-sync = {
-      Unit = {
-        Description = "A systemd timer for filen syncing";
-      };
-
-      Timer = {
-        OnStartupSec = "1min";
-        OnUnitActiveSec = "30min";
-        Unit = "filen-sync.service";
-      };
-
-      Install = {
-        WantedBy = ["default.target"];
-      };
+  systemd.user.timers.filen-sync = {
+    Unit = {
+      Description = "A systemd timer for filen syncing";
     };
 
-    systemd.user.services.filen-sync = {
-      Unit = {
-        Description = "Sync with Filen using filen-cli sync";
-        After = ["network.target"];
-      };
-
-      Service = {
-        Type = "oneshot";
-        ExecStart = ''
-          ${unstable-pkgs.filen-cli}/bin/filen sync /home/${username}/Documents:/
-        '';
-      };
+    Timer = {
+      OnStartupSec = "1min";
+      OnUnitActiveSec = "30min";
+      Unit = "filen-sync.service";
     };
 
-    programs.nushell = {
-      enable = true;
-      configFile.source = (builtins.toString ./.) + "/configs/nushell/config.nu";
-      shellAliases = {
-        nix-search = "nix --extra-experimental-features \"nix-command flakes\" search";
-      };
+    Install = {
+      WantedBy = ["default.target"];
+    };
+  };
+
+  systemd.user.services.filen-sync = {
+    Unit = {
+      Description = "Sync with Filen using filen-cli sync";
+      After = ["network.target"];
     };
 
-    programs.plasma = {
-      enable = true;
+    Service = {
+      Type = "oneshot";
+      ExecStart = ''
+        ${unstable-pkgs.filen-cli}/bin/filen sync /home/${username}/Documents:/
+      '';
+    };
+  };
 
-      powerdevil = {
-        AC = {
-          autoSuspend = {
-            action = "nothing";
-          };
+  programs.nushell = {
+    enable = true;
+    configFile.source = (builtins.toString ./.) + "/configs/nushell/config.nu";
+    shellAliases = {
+      nix-search = "nix --extra-experimental-features \"nix-command flakes\" search";
+    };
+  };
+
+  programs.plasma = {
+    enable = true;
+
+    powerdevil = {
+      AC = {
+        autoSuspend = {
+          action = "nothing";
         };
       };
-
-      input.keyboard = {
-        layouts = [
-          {layout = "us";}
-          {layout = "tr";}
-        ];
-      };
-
-      #panels = [
-      #  {
-      #    location = "bottom";
-      #    widgets = [
-      #      {
-      #        systemTray.items = {
-      #          shown = map (item: "org.kde.plasma.${item}") [
-      #            "networkmanagement"
-      #            "volume"
-      #            "keyboardlayout"
-      #          ];
-      #        };
-      #      }
-      #    ];
-      #  }
-      #];
     };
 
-    programs.git = {
-      enable = true;
-      userName = "Nico Vergara";
-      userEmail = "me@nicoevergara.com";
+    input.keyboard = {
+      layouts = [
+        {layout = "us";}
+        {layout = "tr";}
+      ];
     };
 
-    programs.emacs = {
-      enable = true;
-      package = pkgs.emacs;
-      extraPackages = epkgs:
-        with epkgs; [
-          doom
-        ];
+    #panels = [
+    #  {
+    #    location = "bottom";
+    #    widgets = [
+    #      {
+    #        systemTray.items = {
+    #          shown = map (item: "org.kde.plasma.${item}") [
+    #            "networkmanagement"
+    #            "volume"
+    #            "keyboardlayout"
+    #          ];
+    #        };
+    #      }
+    #    ];
+    #  }
+    #];
+  };
+
+  programs.git = {
+    enable = true;
+    userName = "Nico Vergara";
+    userEmail = "me@nicoevergara.com";
+  };
+
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs;
+    extraPackages = epkgs:
+      with epkgs; [
+        doom
+      ];
+  };
+
+  programs.vim = {
+    enable = true;
+    settings = {
+      tabstop = 2;
     };
+  };
 
-   programs.vim = {
-     enable = true;
-     settings = {
-       tabstop = 2;
-     }; 
-   };
-
-    dconf.settings = {
-      "org/virt-manager/virt-manager/connections" = {
-        autoconnect = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
-        uris = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
-      };
+  dconf.settings = {
+    "org/virt-manager/virt-manager/connections" = {
+      autoconnect = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
+      uris = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
     };
+  };
 
+  programs.starship.enable = true;
 
-    programs.starship.enable = true;
-
-    home.stateVersion = "24.11"; # Do not modify without reading changelogs
+  home.stateVersion = "24.11"; # Do not modify without reading changelogs
 }
