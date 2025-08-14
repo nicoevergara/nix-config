@@ -89,23 +89,6 @@
         {layout = "tr";}
       ];
     };
-
-    #panels = [
-    #  {
-    #    location = "bottom";
-    #    widgets = [
-    #      {
-    #        systemTray.items = {
-    #          shown = map (item: "org.kde.plasma.${item}") [
-    #            "networkmanagement"
-    #            "volume"
-    #            "keyboardlayout"
-    #          ];
-    #        };
-    #      }
-    #    ];
-    #  }
-    #];
   };
 
   programs.git = {

@@ -9,11 +9,15 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nix-darwin, home-manager, nixpkgs }:
-  let
+  outputs = inputs @ {
+    self,
+    nix-darwin,
+    home-manager,
+    nixpkgs,
+  }: let
     username = "nico.vergara";
     system = "aarch64-darwin";
-    configuration = { pkgs, ... }: {
+    configuration = {pkgs, ...}: {
       # List packages installed in system profile. To search by name, run:
       # $ nix-env -qaP | grep wget
       # environment.systemPackages = with pkgs;
@@ -37,16 +41,17 @@
       # $ darwin-rebuild changelog
       system.stateVersion = 6;
 
+      nixpkgs.config.allowUnfree = true;
+
       # The platform the configuration will be used on.
       nixpkgs.hostPlatform = system;
     };
-  in
-  {
+  in {
     # Build darwin flake using:
     # $ darwin-rebuild build --flake .#Nicos-MacBook-Pro
     darwinConfigurations."Nicos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-      modules = [ 
-        configuration 
+      modules = [
+        configuration
         home-manager.darwinModules.home-manager
         {
           home-manager = {

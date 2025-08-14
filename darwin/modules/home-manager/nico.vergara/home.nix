@@ -5,71 +5,20 @@
   username,
   ...
 }: let
-  macosPackages = with pkgs; [
-    rectangle-pro
-  ];
+  rootPath = ../../../..;
   generalDesktopPackages = with pkgs; [
-    # spotify
     dbeaver-bin
     alacritty
+    anki-bin
   ];
 in {
-  nixpkgs.config.allowUnfreePredicate = pkg:
-    builtins.elem (lib.getName pkg) [
-      "rectangle-pro"
-    ];
-
   home.packages =
-    (with pkgs; [
-      alejandra
-      git
-      kubectl
-    ])
-    ++ generalDesktopPackages
-    ++ macosPackages
-    ++ [
-      (
-        with pkgs.google-cloud-sdk;
-          withExtraComponents [
-            components.gke-gcloud-auth-plugin
-            components.cloud-sql-proxy
-          ]
-      )
-    ];
+    generalDesktopPackages
+    ++ import "${rootPath}/modules/home-manager/devenv.nix" {inherit pkgs config;};
 
-  programs.alacritty = {
-    enable = true;
-    settings = {
-      terminal = {
-        shell = "${pkgs.zsh}/bin/zsh";
-      };
-    };
-  };
-
-  programs.direnv = {
-    enable = true;
-    enableZshIntegration = true; # see note on other shells below
-    nix-direnv.enable = true;
-  };
-
-  programs.zsh = {
-    enable = true;
-  };
-
-  programs.git = {
-    enable = true;
-    userName = "Nico Vergara";
-    userEmail = "me@nicoevergara.com";
-  };
-
-  programs.vim = {
-    enable = true;
-    settings = {
-      tabstop = 2;
-    };
-  };
-
-  programs.starship.enable = true;
+  imports = [
+    "${rootPath}/modules/home-manager/base.nix"
+  ];
 
   programs.home-manager.enable = true;
 
