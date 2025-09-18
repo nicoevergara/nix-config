@@ -2,17 +2,24 @@
   config,
   pkgs,
   ...
-}: (with pkgs;
-  [
-    alejandra
-    git
-    kubectl
-    go-swagger
-    protobuf
+}: let
+  go-packages = with pkgs; [
     delve
     go
-  ]
-  ++ [
+    go-swagger
+    (
+      go-migrate.overrideAttrs
+      (oldAttrs: {
+        tags = ["postgres"];
+      })
+    )
+  ];
+  infra-packages = with pkgs; [
+    kubectl
+    protobuf
+    postgresql
+    tenv
+    avro-tools
     (
       with pkgs.google-cloud-sdk;
         withExtraComponents [
@@ -20,4 +27,15 @@
           components.cloud-sql-proxy
         ]
     )
-  ])
+  ];
+in (
+  with pkgs;
+    [
+      alejandra
+      git
+      idris2
+      python314
+    ]
+    ++ go-packages
+    ++ infra-packages
+)

@@ -8,13 +8,21 @@
   rootPath = ../../../..;
   generalDesktopPackages = with pkgs; [
     dbeaver-bin
-    alacritty
     anki-bin
   ];
 in {
   home.packages =
     generalDesktopPackages
     ++ import "${rootPath}/modules/home-manager/devenv.nix" {inherit pkgs config;};
+
+  programs.alacritty = {
+    enable = true;
+    settings = {
+      font = {
+        size = 16;
+      };
+    };
+  };
 
   imports = [
     "${rootPath}/modules/home-manager/base.nix"
