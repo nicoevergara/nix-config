@@ -27,6 +27,9 @@ in {
     "${rootPath}/modules/home-manager/base.nix"
   ];
 
+  # Configure AGENTS.md configuration file for Cursor
+  home.file.".cursor/AGENTS.md".source = ./cursor/AGENTS.md;
+
   programs.home-manager.enable = true;
 
   home.stateVersion = "25.05"; # Do not modify without reading changelogs
