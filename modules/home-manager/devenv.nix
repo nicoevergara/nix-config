@@ -6,7 +6,7 @@
   go-packages = with pkgs; [
     delve
     go
-    go-swagger
+    # go-swagger
     (
       go-migrate.overrideAttrs
       (oldAttrs: {
@@ -25,6 +25,7 @@
         withExtraComponents [
           components.gke-gcloud-auth-plugin
           components.cloud-sql-proxy
+          components.pubsub-emulator
         ]
     )
   ];
@@ -35,6 +36,7 @@ in (
       git
       idris2
       python314
+      jdk24
     ]
     ++ go-packages
     ++ infra-packages

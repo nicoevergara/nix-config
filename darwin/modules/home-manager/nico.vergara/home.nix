@@ -7,8 +7,7 @@
 }: let
   rootPath = ../../../..;
   generalDesktopPackages = with pkgs; [
-    dbeaver-bin
-    anki-bin
+    # dbeaver-bin
   ];
 in {
   home.packages =
