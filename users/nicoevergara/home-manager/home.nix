@@ -1,18 +1,18 @@
 {
   config,
   pkgs,
+  unfree-pkgs,
   unstable-pkgs,
   lib,
   username,
   ...
 }: {
-  nixpkgs.config.allowUnfree = true;
   home.packages =
     (with pkgs; [
       anki
-      zoom-us
       libreoffice-qt6-fresh
       chromium
+      filen-cli
       fuse3
       alejandra
       nmap
@@ -20,7 +20,7 @@
       usbutils
       xclip
       calibre
-      spotify
+      proton-pass
       virt-manager
     ])
     ++ (
@@ -29,9 +29,14 @@
       ]
     )
     ++ (
-      with unstable-pkgs; [
-        unstable-pkgs.filen-cli
+      with unfree-pkgs; [
+        code-cursor
+        spotify
+        zoom-us
       ]
+    )
+    ++ (
+      with unstable-pkgs; []
     );
 
   systemd.user.timers.filen-sync = {
@@ -59,7 +64,7 @@
     Service = {
       Type = "oneshot";
       ExecStart = ''
-        ${unstable-pkgs.filen-cli}/bin/filen sync /home/${username}/Documents:/
+        ${pkgs.filen-cli}/bin/filen sync /home/${username}/Documents:/
       '';
     };
   };
@@ -95,15 +100,6 @@
     enable = true;
     userName = "Nico Vergara";
     userEmail = "me@nicoevergara.com";
-  };
-
-  programs.emacs = {
-    enable = true;
-    package = pkgs.emacs;
-    extraPackages = epkgs:
-      with epkgs; [
-        doom
-      ];
   };
 
   programs.vim = {
