@@ -12,6 +12,7 @@
       anki
       libreoffice-qt6-fresh
       chromium
+      firefox
       filen-cli
       fuse3
       alejandra
@@ -22,6 +23,7 @@
       calibre
       proton-pass
       virt-manager
+      neofetch
     ])
     ++ (
       with pkgs.kdePackages; [

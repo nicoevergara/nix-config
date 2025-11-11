@@ -24,6 +24,42 @@
   networking = {
     hostName = "jay"; # Define your hostname.
     networkmanager.enable = true; # Easiest to use and most distros use this by default.
+    # Enable NAT
+    nat = {
+      enable = true;
+      externalInterface = "enp0s31f6";
+      internalInterfaces = ["wg0"];
+    };
+
+    firewall = {
+      allowedUDPPorts = [51820];
+    };
+
+    wireguard.interfaces = {
+      wg0 = {
+        ips = ["10.100.0.1/24"];
+        listenPort = 51820;
+        # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
+        # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
+        postSetup = ''
+          ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.100.0.0/24 -o eth0 -j MASQUERADE
+        '';
+
+        # This undoes the above command
+        postShutdown = ''
+          ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.100.0.0/24 -o eth0 -j MASQUERADE
+        '';
+
+        privateKeyFile = "/private/wireguard_key";
+        peers = [
+          {
+            name = "nicos-iphone";
+            publicKey = "UGfMEYJMpWH/n5lHMFIG2PpvJdRJiCJw3TVTedaUblE=";
+            allowedIPs = ["10.100.0.2/32"];
+          }
+        ];
+      };
+    };
   };
 
   # Set your time zone.
@@ -49,7 +85,7 @@
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Enable the X11 windowing system.
-  services.xserver.enable = true;
+  # services.xserver.enable = true;
 
   # Enable KDE 6
   services.displayManager.sddm = {
@@ -58,6 +94,9 @@
       enable = true;
     };
   };
+
+  # Enable xwayland for X11 app support
+  programs.xwayland.enable = true;
 
   services.desktopManager.plasma6 = {
     enable = true;
@@ -76,7 +115,11 @@
   environment.systemPackages = with pkgs; [
     vim
     wget
+    wireguard-tools
   ];
+
+  # Set session variable for Chrome-based apps to work with Wayland
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   # Enable the OpenSSH daemon.
   services.openssh = {
