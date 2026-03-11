@@ -104,6 +104,15 @@
     userEmail = "me@nicoevergara.com";
   };
 
+  programs.emacs = {
+    enable = true;
+    package = pkgs.emacs;
+    extraPackages = epkgs:
+      with epkgs; [
+        doom
+      ];
+  };
+
   programs.vim = {
     enable = true;
     settings = {

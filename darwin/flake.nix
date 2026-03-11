@@ -18,16 +18,8 @@
     username = "nico.vergara";
     system = "aarch64-darwin";
     configuration = {pkgs, ...}: {
-      # List packages installed in system profile. To search by name, run:
-      # $ nix-env -qaP | grep wget
-      # environment.systemPackages = with pkgs;
-      #   [ git wget ];
-
       # Necessary for using flakes on this system.
       nix.settings.experimental-features = "nix-command flakes";
-
-      # Enable alternative shell support in nix-darwin.
-      # programs.fish.enable = true;
 
       users.users.${username} = {
         name = username;

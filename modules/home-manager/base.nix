@@ -24,20 +24,24 @@
 
   programs.git = {
     enable = true;
-    userName = "Nico Vergara";
-    userEmail = "me@nicoevergara.com";
+    settings = {
+      user = {
+        name = "Nico Vergara";
+        email = "me@nicoevergara.com";
+      };
+      extraConfig = {
+        push.autoSetupRemote = true;
+        core = {
+          editor = "vim";
+        };
+      };
+    };
     ignores = [
       "*.DS_Store"
       ".direnv"
       ".envrc"
       "default.nix"
     ];
-    extraConfig = {
-      push.autoSetupRemote = true;
-      core = {
-        editor = "vim";
-      };
-    };
   };
 
   programs.vim = {

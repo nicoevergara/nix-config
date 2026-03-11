@@ -5,10 +5,10 @@ This file contains configuration and documentation for AI agents used in this sy
 ## Project Contexts
 
 ### Work Repositories
-- **Directory Containing Projects**: `~/Projects/work`
+- **Project Context**: Use all files in `~/Projects/work` as context
 
 ### Personal Repositories 
-- **Directory Containing Projects**: `~/Projects/personal`
+- **Project Context**: Use all files in `~/Projects/personal` as context
 
 ## Configuration Notes
 

@@ -6,7 +6,7 @@
   go-packages = with pkgs; [
     delve
     go
-    # go-swagger
+    go-swagger
     (
       go-migrate.overrideAttrs
       (oldAttrs: {
@@ -33,10 +33,6 @@ in (
   with pkgs;
     [
       alejandra
-      git
-      idris2
-      python314
-      jdk24
     ]
     ++ go-packages
     ++ infra-packages
