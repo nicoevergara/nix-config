@@ -75,6 +75,12 @@
           }
         ];
       };
+      calibre = nixpkgs.lib.nixosSystem {
+        inherit system;
+        modules = [
+          ./hosts/calibre
+        ];
+      };
     };
   };
 }

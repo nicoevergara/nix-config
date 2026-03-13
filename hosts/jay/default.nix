@@ -1,6 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 {
   config,
   lib,
@@ -10,20 +7,15 @@
   imports = [
     ./hardware-configuration.nix
     ../../users/nicoevergara
+    ../../modules/calibre-server
   ];
 
-  # Use the GRUB 2 boot loader.
-  # boot.loader.grub.enable = true;
-  # boot.loader.grub.efiSupport = true;
-  # boot.loader.grub.efiInstallAsRemovable = true;
-  # boot.loader.efi.efiSysMountPoint = "/boot/efi";
-  # Define on which hard drive you want to install Grub.
-  # boot.loader.grub.device = "/dev/sda"; # or "nodev" for efi only
+  # Enable UEFI boot loader
   boot.loader.systemd-boot.enable = true;
 
   networking = {
-    hostName = "jay"; # Define your hostname.
-    networkmanager.enable = true; # Easiest to use and most distros use this by default.
+    hostName = "jay";
+    networkmanager.enable = true;
     # Enable NAT
     nat = {
       enable = true;
@@ -32,6 +24,7 @@
     };
 
     firewall = {
+      allowedTCPPorts = [80 53];
       allowedUDPPorts = [51820];
     };
 
@@ -39,15 +32,26 @@
       wg0 = {
         ips = ["10.100.0.1/24"];
         listenPort = 51820;
-        # This allows the wireguard server to route your traffic to the internet and hence be like a VPN
-        # For this to work you have to set the dnsserver IP of your router (or dnsserver of choice) in your clients
+        # Allow internet forwarding and disable LAN access
+        # The DNS server on the clients need to be set for this to work
         postSetup = ''
           ${pkgs.iptables}/bin/iptables -t nat -A POSTROUTING -s 10.100.0.0/24 -o eth0 -j MASQUERADE
+          ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -d 192.168.0.0/16 -j DROP
+          ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -d 10.0.0.0/8 -j DROP
+          ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -d 10.0.0.0/8 -j DROP
+          ${pkgs.iptables}/bin/iptables -A FORWARD -i wg0 -d 172.16.0.0/12 -j DROP
+          ${pkgs.iptables}/bin/iptables -A INPUT -i wg0 -p udp --dport 53 -j ACCEPT
+          ${pkgs.iptables}/bin/iptables -A INPUT -i wg0 -p tcp --dport 53 -j ACCEPT
         '';
 
         # This undoes the above command
         postShutdown = ''
           ${pkgs.iptables}/bin/iptables -t nat -D POSTROUTING -s 10.100.0.0/24 -o eth0 -j MASQUERADE
+          ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -d 192.168.0.0/16 -j DROP
+          ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -d 10.0.0.0/8 -j DROP
+          ${pkgs.iptables}/bin/iptables -D FORWARD -i wg0 -d 172.16.0.0/12 -j DROP
+          ${pkgs.iptables}/bin/iptables -D INPUT -i wg0 -p udp --dport 53 -j ACCEPT
+          ${pkgs.iptables}/bin/iptables -D INPUT -i wg0 -p tcp --dport 53 -j ACCEPT
         '';
 
         privateKeyFile = "/private/wireguard_key";
@@ -56,6 +60,67 @@
             name = "nicos-iphone";
             publicKey = "UGfMEYJMpWH/n5lHMFIG2PpvJdRJiCJw3TVTedaUblE=";
             allowedIPs = ["10.100.0.2/32"];
+          }
+          {
+            name = "emmys-iphone";
+            publicKey = "1l7/cFMXuRRz67z1YxGZcobVCGpvVU0Z13OwxdTmdHE=";
+            allowedIPs = ["10.100.0.3/32"];
+          }
+          {
+            name = "emmys-macbook";
+            publicKey = "/LE475Ft8b7aypMjFwpwtbO5mgUNZDmXJKcF27TY4B4=";
+            allowedIPs = ["10.100.0.4/32"];
+          }
+          {
+            name = "gl-inet-travel-router";
+            publicKey = "H+whubq9mvTPsMu3HAFzvvJT4rGhkfzTxhfhdX05DGo=";
+            allowedIPs = ["10.100.0.5/32"];
+          }
+        ];
+      };
+    };
+  };
+
+  environment.etc."blocked-hosts".source = pkgs.fetchurl {
+    url = "https://raw.githubusercontent.com/StevenBlack/hosts/c66c4aa05a95669943eb3b8f68ba3d359825c4b9/hosts";
+    sha256 = "13m33rfx5rg3n6h8p2wk7qpzpi159dkdnp0jchk46r3v6iv4vnh6";
+  };
+
+  services.dnsmasq = {
+    enable = true;
+    settings = {
+      # DNS mappings to self-hosted services
+      address = [
+        "/vergara.casa/10.100.0.1"
+        "/library.vergara.casa/10.100.0.1"
+      ];
+      addn-hosts = [
+        "/etc/blocked-hosts"
+      ];
+      interface = "wg0";
+      listen-address = ["10.100.0.1" "127.0.0.1"];
+      bind-interfaces = true;
+      server = [
+        "1.1.1.1"
+        "1.0.0.1"
+      ];
+    };
+  };
+
+  # set up reverse proxy for calibre
+  services.nginx = {
+    enable = true;
+    user = "nicoevergara";
+    virtualHosts = {
+      "library.vergara.casa" = {
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8080";
+          proxyWebsockets = true;
+        };
+        listen = [
+          {
+            addr = "10.100.0.1";
+            port = 80;
           }
         ];
       };
@@ -79,13 +144,6 @@
     LC_TELEPHONE = "en_US.UTF-8";
     LC_TIME = "en_US.UTF-8";
   };
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
-
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
 
   # Enable KDE 6
   services.displayManager.sddm = {
@@ -116,6 +174,7 @@
     vim
     wget
     wireguard-tools
+    calibre
   ];
 
   # Set session variable for Chrome-based apps to work with Wayland
@@ -135,42 +194,32 @@
   # Set up virtualization with libvirtd and virt-manager
   programs.virt-manager.enable = true;
 
-  users.groups.libvirtd.members = [config.users.users.nicoevergara.name];
+  # Set user groups' members
+  users.groups.libvirtd.members = ["nicoevergara"];
+  users.groups.calibre-server.members = ["calibre-server" "nicoevergara"];
+
   virtualisation = {
-    libvirtd.enable = true;
+    libvirtd = {
+      enable = true;
+      qemu = {
+        package = pkgs.qemu_kvm;
+        runAsRoot = true;
+        swtpm.enable = true;
+        ovmf = {
+          enable = true;
+          packages = [(pkgs.OVMFFull.override {
+            secureBoot = true;
+            tpmSupport = true;
+          }).fd];
+        };
+      };
+    };
+
     spiceUSBRedirection.enable = true;
   };
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  # This option defines the first version of NixOS you have installed on this particular machine,
-  # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-  #
-  # Most users should NEVER change this value after the initial install, for any reason,
-  # even if you've upgraded your system to a new NixOS release.
-  #
-  # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
-  # to actually do that.
-  #
-  # This value being lower than the current NixOS release does NOT mean your system is
-  # out of date, out of support, or vulnerable.
-  #
-  # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-  # and migrated your data accordingly.
-  #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
-  system.stateVersion = "24.11"; # Did you read the comment?
+  system.stateVersion = "24.11";
   system.autoUpgrade.enable = true;
 }

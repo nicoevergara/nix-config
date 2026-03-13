@@ -24,6 +24,9 @@
       proton-pass
       virt-manager
       neofetch
+      zed-editor
+      nixd
+      lsof
     ])
     ++ (
       with pkgs.kdePackages; [
@@ -32,7 +35,6 @@
     )
     ++ (
       with unfree-pkgs; [
-        code-cursor
         spotify
         zoom-us
       ]
@@ -71,63 +73,62 @@
     };
   };
 
-  programs.nushell = {
-    enable = true;
-    configFile.source = (builtins.toString ./.) + "/configs/nushell/config.nu";
-    shellAliases = {
-      nix-search = "nix --extra-experimental-features \"nix-command flakes\" search";
+  programs = {
+    # nushell = {
+    #   enable = true;
+    #   configFile.source = (builtins.toString ./.) + "/configs/nushell/config.nu";
+    #   shellAliases = {
+    #     nix-search = "nix --extra-experimental-features \"nix-command flakes\" search";
+    #   };
+    # };
+
+    direnv = {
+      enable = true;
+      nix-direnv.enable = true;
     };
-  };
 
-  programs.plasma = {
-    enable = true;
+    git = {
+      enable = true;
+      userName = "Nico Vergara";
+      userEmail = "me@nicoevergara.com";
+    };
 
-    powerdevil = {
-      AC = {
-        autoSuspend = {
-          action = "nothing";
+    bash = {
+      enable = true;
+      initExtra = ''
+        # set up direnv hook
+        eval "$(${pkgs.direnv} hook bash)"
+      '';
+    };
+
+    plasma = {
+      enable = true;
+
+      powerdevil = {
+        AC = {
+          autoSuspend = {
+            action = "nothing";
+          };
         };
+      };
+
+      input.keyboard = {
+        layouts = [
+          {layout = "us";}
+          {layout = "tr";}
+        ];
       };
     };
 
-    input.keyboard = {
-      layouts = [
-        {layout = "us";}
-        {layout = "tr";}
-      ];
+    vim = {
+      enable = true;
+      settings = {
+        tabstop = 2;
+      };
     };
-  };
 
-  programs.git = {
-    enable = true;
-    userName = "Nico Vergara";
-    userEmail = "me@nicoevergara.com";
+    starship.enable = true;
   };
-
-  programs.emacs = {
-    enable = true;
-    package = pkgs.emacs;
-    extraPackages = epkgs:
-      with epkgs; [
-        doom
-      ];
-  };
-
-  programs.vim = {
-    enable = true;
-    settings = {
-      tabstop = 2;
-    };
-  };
-
-  dconf.settings = {
-    "org/virt-manager/virt-manager/connections" = {
-      autoconnect = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
-      uris = ["qemu+ssh://nicoevergara@192.168.0.84/system"];
-    };
-  };
-
-  programs.starship.enable = true;
 
   home.stateVersion = "24.11"; # Do not modify without reading changelogs
 }
