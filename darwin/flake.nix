@@ -7,6 +7,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    mac-app-util.url = "github:hraban/mac-app-util";
   };
 
   outputs = inputs @ {
@@ -14,6 +15,7 @@
     nix-darwin,
     home-manager,
     nixpkgs,
+    mac-app-util,
   }: let
     username = "nico.vergara";
     system = "aarch64-darwin";
@@ -26,17 +28,16 @@
         home = "/Users/${username}";
       };
 
-      # Set Git commit hash for darwin-version.
-      system.configurationRevision = self.rev or self.dirtyRev or null;
+      system = {
+        configurationRevision = self.rev or self.dirtyRev or null;
+        stateVersion = 6;
+        primaryUser = username;
+      };
 
-      # Used for backwards compatibility, please read the changelog before changing.
-      # $ darwin-rebuild changelog
-      system.stateVersion = 6;
-
-      nixpkgs.config.allowUnfree = true;
-
-      # The platform the configuration will be used on.
-      nixpkgs.hostPlatform = system;
+      nixpkgs = {
+        config.allowUnfree = true;
+        hostPlatform = system;
+      };
     };
   in {
     # Build darwin flake using:
@@ -44,11 +45,15 @@
     darwinConfigurations."Nicos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
       modules = [
         configuration
+        mac-app-util.darwinModules.default
         home-manager.darwinModules.home-manager
         {
           home-manager = {
             useGlobalPkgs = true;
             useUserPackages = true;
+            sharedModules = [
+              mac-app-util.homeManagerModules.default
+            ];
             extraSpecialArgs = {
               inherit username;
             };

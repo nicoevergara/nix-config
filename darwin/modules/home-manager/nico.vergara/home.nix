@@ -6,7 +6,9 @@
   ...
 }: let
   rootPath = ../../../..;
-  generalDesktopPackages = with pkgs; [];
+  generalDesktopPackages = with pkgs; [
+    zed-editor
+  ];
 in {
   # Enable home-manager
   programs.home-manager.enable = true;
@@ -25,7 +27,7 @@ in {
   ];
 
   # Configure AGENTS.md configuration file for Cursor
-  home.file.".cursor/AGENTS.md".source = ./configs/AGENTS.md;
+  home.file.".cursor/AGENTS.md".source = "${rootPath}/modules/llms/AGENTS.md";
 
   home.stateVersion = "25.11"; # Do not modify without reading changelogs
 }
