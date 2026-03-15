@@ -3,8 +3,7 @@
   lib,
   pkgs,
   ...
-}:
-let
+}: let
   calibre-library-dir = "/var/lib/calibre-server";
   service-user = "nicoevergara";
   calibre-server-user = "calibre-server";
@@ -19,6 +18,6 @@ in {
       enable = true;
       userDb = "/srv/calibre/users.sqlite";
     };
-    libraries = [ calibre-library-dir ];
+    libraries = [calibre-library-dir];
   };
 }

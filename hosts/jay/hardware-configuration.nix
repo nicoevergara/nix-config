@@ -4,8 +4,8 @@
 {
   config,
   lib,
-  pkgs,
   modulesPath,
+  pkgs,
   ...
 }: {
   imports = [
@@ -43,11 +43,27 @@
     enable = true;
   };
 
+  hardware.opengl.enable = true;
+
+  # Whitelist unfree nvidia packages
+  nixpkgs.config.allowUnfreePredicate = pkg:
+    builtins.elem (lib.getName pkg) [
+      "nvidia-x11"
+      "nvidia-settings"
+    ];
+
+  services.xserver.videoDrivers = ["nvidia"];
+
   hardware.nvidia = {
     modesetting.enable = true;
+
+    # Enable the open source kernel module
+    open = true;
+
+    # Enable nvidia settings panel
+    nvidiaSettings = true;
+
     powerManagement.enable = false;
     powerManagement.finegrained = false;
-    open = true;
-    nvidiaSettings = true;
   };
 }
