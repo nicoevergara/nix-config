@@ -43,8 +43,6 @@
     enable = true;
   };
 
-  hardware.opengl.enable = true;
-
   # Whitelist unfree nvidia packages
   nixpkgs.config.allowUnfreePredicate = pkg:
     builtins.elem (lib.getName pkg) [
@@ -53,6 +51,12 @@
     ];
 
   services.xserver.videoDrivers = ["nvidia"];
+
+  # Disable sleeping of user session, which is causing the GPU driver to hang
+  # A known issue in systemd 256+
+  systemd.services.systemd-suspend.environment = {
+    SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
+  };
 
   hardware.nvidia = {
     modesetting.enable = true;
@@ -63,7 +67,7 @@
     # Enable nvidia settings panel
     nvidiaSettings = true;
 
-    powerManagement.enable = false;
+    powerManagement.enable = true;
     powerManagement.finegrained = false;
   };
 }
