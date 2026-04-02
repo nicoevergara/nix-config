@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   ...
 }:
@@ -40,8 +39,6 @@
     ignores = [
       "*.DS_Store"
       ".direnv"
-      ".envrc"
-      "default.nix"
     ];
   };
 

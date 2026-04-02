@@ -1,5 +1,6 @@
 {
   pkgs,
+  unfree-pkgs-unstable,
   ...
 }:
 let
@@ -8,31 +9,17 @@ let
     nil
     nixd
   ];
-  ai-tooling-packages = with pkgs; [
-    claude-code
-    gemini-cli
-  ];
-  go-packages = with pkgs; [
-    delve
-    go-swagger
-    (go-migrate.overrideAttrs (oldAttrs: {
-      tags = [ "postgres" ];
-    }))
-  ];
+  ai-tooling-packages =
+    with pkgs;
+    [
+      gemini-cli
+    ]
+    ++ (with unfree-pkgs-unstable; [
+      claude-code
+    ]);
   infra-packages = with pkgs; [
-    kubectl
     protobuf
     postgresql
-    tenv
-    avro-tools
-    (
-      with pkgs.google-cloud-sdk;
-      withExtraComponents [
-        components.gke-gcloud-auth-plugin
-        components.cloud-sql-proxy
-        components.pubsub-emulator
-      ]
-    )
   ];
 in
-(nix-lang-packages ++ ai-tooling-packages ++ go-packages ++ infra-packages)
+(nix-lang-packages ++ ai-tooling-packages ++ infra-packages)

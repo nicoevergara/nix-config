@@ -3,11 +3,23 @@
   lib,
   pkgs,
   ...
-}: {
+}:
+let
+  usernames = {
+    nico = "nicoevergara";
+  };
+in
+{
   imports = [
     ./hardware-configuration.nix
-    ../../users/nicoevergara
-    ../../modules/calibre-server
+    ../../users/${usernames.nico}
+    ../../modules/ollama
+  ]
+  ++ [
+    (import ../../modules/calibre-server {
+      inherit config pkgs lib;
+      serviceMembers = [ usernames.nico ];
+    })
   ];
 
   # Enable UEFI boot loader
@@ -20,17 +32,20 @@
     nat = {
       enable = true;
       externalInterface = "enp0s31f6";
-      internalInterfaces = ["wg0"];
+      internalInterfaces = [ "wg0" ];
     };
 
     firewall = {
-      allowedTCPPorts = [80 53];
-      allowedUDPPorts = [51820];
+      allowedTCPPorts = [
+        80
+        53
+      ];
+      allowedUDPPorts = [ 51820 ];
     };
 
     wireguard.interfaces = {
       wg0 = {
-        ips = ["10.100.0.1/24"];
+        ips = [ "10.100.0.1/24" ];
         listenPort = 51820;
         # Allow internet forwarding and disable LAN access
         # The DNS server on the clients need to be set for this to work
@@ -59,22 +74,22 @@
           {
             name = "nicos-iphone";
             publicKey = "UGfMEYJMpWH/n5lHMFIG2PpvJdRJiCJw3TVTedaUblE=";
-            allowedIPs = ["10.100.0.2/32"];
+            allowedIPs = [ "10.100.0.2/32" ];
           }
           {
             name = "emmys-iphone";
             publicKey = "1l7/cFMXuRRz67z1YxGZcobVCGpvVU0Z13OwxdTmdHE=";
-            allowedIPs = ["10.100.0.3/32"];
+            allowedIPs = [ "10.100.0.3/32" ];
           }
           {
             name = "emmys-macbook";
             publicKey = "/LE475Ft8b7aypMjFwpwtbO5mgUNZDmXJKcF27TY4B4=";
-            allowedIPs = ["10.100.0.4/32"];
+            allowedIPs = [ "10.100.0.4/32" ];
           }
           {
             name = "gl-inet-travel-router";
             publicKey = "H+whubq9mvTPsMu3HAFzvvJT4rGhkfzTxhfhdX05DGo=";
-            allowedIPs = ["10.100.0.5/32"];
+            allowedIPs = [ "10.100.0.5/32" ];
           }
         ];
       };
@@ -84,6 +99,10 @@
   environment.etc."blocked-hosts".source = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/StevenBlack/hosts/c66c4aa05a95669943eb3b8f68ba3d359825c4b9/hosts";
     sha256 = "13m33rfx5rg3n6h8p2wk7qpzpi159dkdnp0jchk46r3v6iv4vnh6";
+  };
+
+  services.avahi = {
+    enable = true;
   };
 
   services.dnsmasq = {
@@ -98,7 +117,10 @@
         "/etc/blocked-hosts"
       ];
       interface = "wg0";
-      listen-address = ["10.100.0.1" "127.0.0.1"];
+      listen-address = [
+        "10.100.0.1"
+        "127.0.0.1"
+      ];
       bind-interfaces = true;
       server = [
         "1.1.1.1"
@@ -110,7 +132,7 @@
   # set up reverse proxy for calibre
   services.nginx = {
     enable = true;
-    user = "nicoevergara";
+    user = usernames.nico;
     virtualHosts = {
       "library.vergara.casa" = {
         locations."/" = {
@@ -183,7 +205,7 @@
   # Enable the OpenSSH daemon.
   services.openssh = {
     enable = true;
-    ports = [22];
+    ports = [ 22 ];
     settings = {
       PasswordAuthentication = false;
       AllowUsers = null;
@@ -195,33 +217,30 @@
   programs.virt-manager.enable = true;
 
   # Set user groups' members
-  users.groups.libvirtd.members = ["nicoevergara"];
-  users.groups.calibre-server.members = ["calibre-server" "nicoevergara"];
+  users.groups.libvirtd.members = [ usernames.nico ];
 
   virtualisation = {
+    oci-containers = {
+      backend = "podman";
+    };
+
     libvirtd = {
       enable = true;
       qemu = {
         package = pkgs.qemu_kvm;
         runAsRoot = true;
         swtpm.enable = true;
-        ovmf = {
-          enable = true;
-          packages = [
-            (pkgs.OVMFFull.override {
-              secureBoot = true;
-              tpmSupport = true;
-            }).fd
-          ];
-        };
       };
     };
 
     spiceUSBRedirection.enable = true;
   };
 
-  nix.settings.experimental-features = ["nix-command" "flakes"];
+  nix.settings.experimental-features = [
+    "nix-command"
+    "flakes"
+  ];
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.11";
   system.autoUpgrade.enable = true;
 }

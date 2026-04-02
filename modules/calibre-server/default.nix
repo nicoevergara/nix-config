@@ -2,12 +2,19 @@
   config,
   lib,
   pkgs,
+  serviceMembers,
   ...
-}: let
+}:
+let
   calibre-library-dir = "/var/lib/calibre-server";
-  service-user = "nicoevergara";
   calibre-server-user = "calibre-server";
-in {
+in
+{
+
+  users.groups.calibre-server.members = [
+    calibre-server-user
+  ]
+  ++ serviceMembers;
   systemd.tmpfiles.rules = [
     "d ${calibre-library-dir} 0755 calibre-server calibre-server -"
   ];
@@ -18,6 +25,6 @@ in {
       enable = true;
       userDb = "/srv/calibre/users.sqlite";
     };
-    libraries = [calibre-library-dir];
+    libraries = [ calibre-library-dir ];
   };
 }
