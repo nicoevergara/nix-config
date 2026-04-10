@@ -96,55 +96,102 @@ in
     };
   };
 
-  environment.etc."blocked-hosts".source = pkgs.fetchurl {
-    url = "https://raw.githubusercontent.com/StevenBlack/hosts/c66c4aa05a95669943eb3b8f68ba3d359825c4b9/hosts";
-    sha256 = "13m33rfx5rg3n6h8p2wk7qpzpi159dkdnp0jchk46r3v6iv4vnh6";
-  };
-
-  services.avahi = {
-    enable = true;
-  };
-
-  services.dnsmasq = {
-    enable = true;
-    settings = {
-      # DNS mappings to self-hosted services
-      address = [
-        "/vergara.casa/10.100.0.1"
-        "/library.vergara.casa/10.100.0.1"
-      ];
-      addn-hosts = [
-        "/etc/blocked-hosts"
-      ];
-      interface = "wg0";
-      listen-address = [
-        "10.100.0.1"
-        "127.0.0.1"
-      ];
-      bind-interfaces = true;
-      server = [
-        "1.1.1.1"
-        "1.0.0.1"
-      ];
+  environment = {
+    etc = {
+      "blocked-hosts".source = pkgs.fetchurl {
+        url = "https://raw.githubusercontent.com/StevenBlack/hosts/c66c4aa05a95669943eb3b8f68ba3d359825c4b9/hosts";
+        sha256 = "13m33rfx5rg3n6h8p2wk7qpzpi159dkdnp0jchk46r3v6iv4vnh6";
+      };
     };
+    plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
+    # Packages included in system profile
+    systemPackages = with pkgs; [
+      vim
+      wget
+      wireguard-tools
+      calibre
+    ];
+
+    # Set session variable for Chrome-based apps to work with Wayland
+    sessionVariables.NIXOS_OZONE_WL = "1";
   };
 
-  # set up reverse proxy for calibre
-  services.nginx = {
-    enable = true;
-    user = usernames.nico;
-    virtualHosts = {
-      "library.vergara.casa" = {
-        locations."/" = {
-          proxyPass = "http://127.0.0.1:8080";
-          proxyWebsockets = true;
-        };
-        listen = [
-          {
-            addr = "10.100.0.1";
-            port = 80;
-          }
+  services = {
+    avahi = {
+      enable = true;
+    };
+
+    dnsmasq = {
+      enable = true;
+      settings = {
+        # DNS mappings to self-hosted services
+        address = [
+          "/vergara.casa/10.100.0.1"
+          "/library.vergara.casa/10.100.0.1"
         ];
+        addn-hosts = [
+          "/etc/blocked-hosts"
+        ];
+        interface = "wg0";
+        listen-address = [
+          "10.100.0.1"
+          "127.0.0.1"
+        ];
+        bind-interfaces = true;
+        server = [
+          "1.1.1.1"
+          "1.0.0.1"
+        ];
+      };
+    };
+    # set up reverse proxy for calibre
+    nginx = {
+      enable = true;
+      user = usernames.nico;
+      virtualHosts = {
+        "library.vergara.casa" = {
+          locations."/" = {
+            proxyPass = "http://127.0.0.1:8080";
+            proxyWebsockets = true;
+          };
+          listen = [
+            {
+              addr = "10.100.0.1";
+              port = 80;
+            }
+          ];
+        };
+      };
+    };
+
+    desktopManager.plasma6 = {
+      enable = true;
+    };
+
+    # Enable KDE 6
+    displayManager.sddm = {
+      enable = true;
+      wayland = {
+        enable = true;
+      };
+    };
+
+    # Enable sound.
+    pipewire = {
+      enable = true;
+      pulse.enable = true;
+    };
+    # Enable touchpad support (enabled default in most desktopManager).
+    libinput.enable = true;
+
+    # Enable the OpenSSH daemon.
+    openssh = {
+      enable = true;
+      ports = [ 22 ];
+      settings = {
+        PasswordAuthentication = false;
+        AllowUsers = null;
+        PermitRootLogin = "no";
       };
     };
   };
@@ -153,70 +200,28 @@ in
   time.timeZone = "America/Los_Angeles";
 
   # Internationalisation properties
-  i18n.defaultLocale = "en_US.UTF-8";
-
-  i18n.extraLocaleSettings = {
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };
-
-  # Enable KDE 6
-  services.displayManager.sddm = {
-    enable = true;
-    wayland = {
-      enable = true;
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    extraLocaleSettings = {
+      LC_ADDRESS = "en_US.UTF-8";
+      LC_IDENTIFICATION = "en_US.UTF-8";
+      LC_MEASUREMENT = "en_US.UTF-8";
+      LC_MONETARY = "en_US.UTF-8";
+      LC_NAME = "en_US.UTF-8";
+      LC_NUMERIC = "en_US.UTF-8";
+      LC_PAPER = "en_US.UTF-8";
+      LC_TELEPHONE = "en_US.UTF-8";
+      LC_TIME = "en_US.UTF-8";
     };
   };
 
-  # Enable xwayland for X11 app support
-  programs.xwayland.enable = true;
+  programs = {
+    # Enable xwayland for X11 app support
+    xwayland.enable = true;
 
-  services.desktopManager.plasma6 = {
-    enable = true;
+    # Set up virtualization with libvirtd and virt-manager
+    virt-manager.enable = true;
   };
-
-  environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
-
-  # Enable sound.
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-  };
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  services.libinput.enable = true;
-
-  # Packages included in system profile
-  environment.systemPackages = with pkgs; [
-    vim
-    wget
-    wireguard-tools
-    calibre
-  ];
-
-  # Set session variable for Chrome-based apps to work with Wayland
-  environment.sessionVariables.NIXOS_OZONE_WL = "1";
-
-  # Enable the OpenSSH daemon.
-  services.openssh = {
-    enable = true;
-    ports = [ 22 ];
-    settings = {
-      PasswordAuthentication = false;
-      AllowUsers = null;
-      PermitRootLogin = "no";
-    };
-  };
-
-  # Set up virtualization with libvirtd and virt-manager
-  programs.virt-manager.enable = true;
 
   # Set user groups' members
   users.groups.libvirtd.members = [ usernames.nico ];

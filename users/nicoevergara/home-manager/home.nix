@@ -1,7 +1,4 @@
 {
-  config,
-  stable-pkgs,
-  unstable-pkgs,
   lib,
   isDarwin ? false,
   ...

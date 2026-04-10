@@ -23,6 +23,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
+
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
   };
 
   outputs =
@@ -34,6 +36,7 @@
       plasma-manager,
       nix-darwin,
       mac-app-util,
+      nix-homebrew,
       ...
     }:
     let
@@ -58,7 +61,7 @@
         }
       );
       darwin-configuration =
-        { pkgs, ... }:
+        _:
         {
           # Necessary for using flakes on this system.
           nix.settings.experimental-features = "nix-command flakes";
@@ -80,6 +83,7 @@
         };
     in
     {
+      formatter = forAllSystems (system: nixpkgs-unstable.legacyPackages.${system}.nixfmt);
       nixosConfigurations = {
         jay = nixpkgs-unstable.lib.nixosSystem {
           specialArgs = {
@@ -89,14 +93,16 @@
             ./hosts/jay
             home-manager.nixosModules.home-manager
             {
-              home-manager.useGlobalPkgs = true;
-              home-manager.useUserPackages = true;
-              home-manager.sharedModules = [ plasma-manager.homeManagerModules.plasma-manager ];
-              home-manager.extraSpecialArgs = {
-                inherit username;
-                isDarwin = false;
-                stable-pkgs = nixpkgs.legacyPackages."x86_64-linux";
-                unstable-pkgs = unstable-pkgs."x86_64-linux";
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                sharedModules = [ plasma-manager.homeManagerModules.plasma-manager ];
+                extraSpecialArgs = {
+                  inherit username;
+                  isDarwin = false;
+                  stable-pkgs = nixpkgs.legacyPackages."x86_64-linux";
+                  unstable-pkgs = unstable-pkgs."x86_64-linux";
+                };
               };
             }
           ];
@@ -113,6 +119,18 @@
           darwin-configuration
           mac-app-util.darwinModules.default
           home-manager.darwinModules.home-manager
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              enable = true;
+              enableRosetta = true;
+              user = username;
+            };
+            homebrew = {
+              enable = true;
+              casks = [ "ghostty" ];
+            };
+          }
           {
             # Let Determinate Nix handle Nix config
             nix.enable = false;

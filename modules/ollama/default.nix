@@ -108,43 +108,43 @@ in
   };
 
   # Create directories for data persistence
-  systemd.tmpfiles.rules = [
-    "d /var/lib/mongodb 0755 root root -"
-    "d /var/lib/meilisearch 0755 root root -"
-  ];
+  systemd = {
+    tmpfiles.rules = [
+      "d /var/lib/mongodb 0755 root root -"
+      "d /var/lib/meilisearch 0755 root root -"
+    ];
 
-  systemd.services.init-librechat-pod = {
-    description = "Create the Podman pod for LibreChat stack";
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig.Type = "oneshot";
-    script = ''
-      # Create the pod if it doesn't exist
-      ${pkgs.podman}/bin/podman pod exists ${librechatConfig.podname} || \
-      ${pkgs.podman}/bin/podman pod create \
-        --name ${librechatConfig.podname} \
-        --publish ${toString librechatConfig.port}:${toString librechatConfig.port} \
-        --publish ${toString meiliConfig.port}:${toString meiliConfig.port}
-    '';
-  };
-
-  systemd.services.podman-ollama.path = [ pkgs.nvidia-container-toolkit ];
-
-  systemd.services = {
-    "podman-mongodb".after = [ "init-librechat-pod.service" ];
-    "podman-meilisearch".after = [ "init-librechat-pod.service" ];
-    "podman-librechat" = {
-      after = [
-        "init-librechat-pod.service"
-        "podman-mongodb.service"
-        "podman-meilisearch.service"
-        "podman-ollama.service"
-      ];
-      requires = [
-        "podman-mongodb.service"
-        "podman-meilisearch.service"
-        "podman-ollama.service"
-      ];
+    services.init-librechat-pod = {
+      description = "Create the Podman pod for LibreChat stack";
+      after = [ "network.target" ];
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig.Type = "oneshot";
+      script = ''
+        # Create the pod if it doesn't exist
+        ${pkgs.podman}/bin/podman pod exists ${librechatConfig.podname} || \
+        ${pkgs.podman}/bin/podman pod create \
+          --name ${librechatConfig.podname} \
+          --publish ${toString librechatConfig.port}:${toString librechatConfig.port} \
+          --publish ${toString meiliConfig.port}:${toString meiliConfig.port}
+      '';
+    };
+    services = {
+      "podman-mongodb".after = [ "init-librechat-pod.service" ];
+      "podman-meilisearch".after = [ "init-librechat-pod.service" ];
+      "podman-librechat" = {
+        after = [
+          "init-librechat-pod.service"
+          "podman-mongodb.service"
+          "podman-meilisearch.service"
+          "podman-ollama.service"
+        ];
+        requires = [
+          "podman-mongodb.service"
+          "podman-meilisearch.service"
+          "podman-ollama.service"
+        ];
+      };
+      podman-ollama.path = [ pkgs.nvidia-container-toolkit ];
     };
   };
 }

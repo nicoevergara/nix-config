@@ -1,5 +1,4 @@
 {
-  stable-pkgs,
   unstable-pkgs,
   ...
 }:

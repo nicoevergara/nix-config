@@ -12,17 +12,19 @@
     (modulesPath + "/installer/scan/not-detected.nix")
   ];
 
-  boot.initrd.availableKernelModules = [
-    "xhci_pci"
-    "ahci"
-    "usbhid"
-    "usb_storage"
-    "sd_mod"
-    "sr_mod"
-  ];
-  boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ "kvm-intel" ];
-  boot.extraModulePackages = [ ];
+  boot = {
+    initrd.availableKernelModules = [
+      "xhci_pci"
+      "ahci"
+      "usbhid"
+      "usb_storage"
+      "sd_mod"
+      "sr_mod"
+    ];
+    initrd.kernelModules = [ ];
+    kernelModules = [ "kvm-intel" ];
+    extraModulePackages = [ ];
+  };
 
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/34b8d1d9-6955-468c-8e66-2f3fd1415f4e";
@@ -48,9 +50,28 @@
   # networking.interfaces.enp0s31f6.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-  hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-  hardware.graphics = {
-    enable = true;
+  hardware = {
+    cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+    graphics = {
+      enable = true;
+    };
+
+    # Enable Nvidia Container Toolkit
+    nvidia-container-toolkit.enable = true;
+
+    nvidia = {
+      modesetting.enable = true;
+
+      # Disable the open source kernel module
+      open = false;
+
+      # Enable nvidia settings panel
+      nvidiaSettings = true;
+
+      powerManagement.enable = true;
+      powerManagement.finegrained = false;
+    };
   };
 
   # Whitelist unfree nvidia packages
@@ -67,21 +88,5 @@
   # A known issue in systemd 256+
   systemd.services.systemd-suspend.environment = {
     SYSTEMD_SLEEP_FREEZE_USER_SESSIONS = "false";
-  };
-
-  # Enable Nvidia Container Toolkit
-  hardware.nvidia-container-toolkit.enable = true;
-
-  hardware.nvidia = {
-    modesetting.enable = true;
-
-    # Disable the open source kernel module
-    open = false;
-
-    # Enable nvidia settings panel
-    nvidiaSettings = true;
-
-    powerManagement.enable = true;
-    powerManagement.finegrained = false;
   };
 }
