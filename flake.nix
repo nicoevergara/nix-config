@@ -129,6 +129,7 @@
               casks = [
                 "ghostty"
                 "chromium"
+                "filen"
               ];
             };
           }
