@@ -3,7 +3,8 @@
   config,
   lib,
   ...
-}: {
+}:
+{
   users.mutableUsers = true;
   users.users.nicoevergara = {
     isNormalUser = true;
@@ -13,9 +14,9 @@
       "libvirtd"
     ];
 
-    packages = [pkgs.home-manager];
+    packages = [ pkgs.home-manager ];
 
-    openssh.authorizedKeys.keys = [];
+    openssh.authorizedKeys.keys = [ ];
   };
 
   home-manager.users.nicoevergara = import ./home-manager/home.nix;

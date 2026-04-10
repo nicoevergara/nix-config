@@ -4,7 +4,17 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
+      url = "github:nix-community/home-manager/master";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
+    nix-darwin = {
+      url = "github:nix-darwin/nix-darwin/master";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
+    mac-app-util = {
+      url = "github:hraban/mac-app-util";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -22,25 +32,56 @@
       nixpkgs-unstable,
       home-manager,
       plasma-manager,
+      nix-darwin,
+      mac-app-util,
       ...
     }:
     let
       username = "nicoevergara";
-      system = "x86_64-linux";
-      unstable-pkgs = nixpkgs-unstable.legacyPackages.${system};
-      unfree-pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
-      unfree-pkgs-unstable = import nixpkgs-unstable {
-        inherit system;
-        config.allowUnfree = true;
-      };
+      darwinSystem = "aarch64-darwin";
+      systems = [
+        "x86_64-linux"
+        "aarch64-darwin"
+      ];
+      forAllSystems = nixpkgs.lib.genAttrs systems;
+      unstable-pkgs = forAllSystems (
+        system:
+        import nixpkgs-unstable {
+          inherit system;
+          config.allowUnfreePredicate =
+            pkg:
+            builtins.elem (nixpkgs.lib.getName pkg) [
+              "spotify"
+              "zoom"
+              "claude-code"
+            ];
+        }
+      );
+      darwin-configuration =
+        { pkgs, ... }:
+        {
+          # Necessary for using flakes on this system.
+          nix.settings.experimental-features = "nix-command flakes";
+
+          users.users.${username} = {
+            name = username;
+            home = "/Users/${username}";
+          };
+
+          system = {
+            configurationRevision = self.rev or self.dirtyRev or null;
+            stateVersion = 6;
+            primaryUser = username;
+          };
+
+          nixpkgs = {
+            hostPlatform = darwinSystem;
+          };
+        };
     in
     {
       nixosConfigurations = {
-        jay = nixpkgs.lib.nixosSystem {
-          inherit system;
+        jay = nixpkgs-unstable.lib.nixosSystem {
           specialArgs = {
             inherit inputs;
           };
@@ -52,20 +93,45 @@
               home-manager.useUserPackages = true;
               home-manager.sharedModules = [ plasma-manager.homeManagerModules.plasma-manager ];
               home-manager.extraSpecialArgs = {
-                inherit unfree-pkgs;
-                inherit unstable-pkgs;
-                inherit unfree-pkgs-unstable;
                 inherit username;
+                isDarwin = false;
+                stable-pkgs = nixpkgs.legacyPackages."x86_64-linux";
+                unstable-pkgs = unstable-pkgs."x86_64-linux";
               };
             }
           ];
         };
-        calibre = nixpkgs.lib.nixosSystem {
-          inherit system;
-          modules = [
-            ./hosts/calibre
-          ];
+      };
+      # Build darwin flake using:
+      # $ darwin-rebuild build --flake .#Nicos-MacBook-Pro
+      darwinConfigurations."Nicos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
+        system = darwinSystem;
+        specialArgs = {
+          inherit inputs;
         };
+        modules = [
+          darwin-configuration
+          mac-app-util.darwinModules.default
+          home-manager.darwinModules.home-manager
+          {
+            # Let Determinate Nix handle Nix config
+            nix.enable = false;
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              sharedModules = [
+                mac-app-util.homeManagerModules.default
+              ];
+              extraSpecialArgs = {
+                inherit username;
+                isDarwin = true;
+                stable-pkgs = nixpkgs.legacyPackages.${darwinSystem};
+                unstable-pkgs = unstable-pkgs.${darwinSystem};
+              };
+              users.${username} = import ./users/${username}/home-manager/home.nix;
+            };
+          }
+        ];
       };
     };
 }
