@@ -3,9 +3,9 @@
   ...
 }:
 {
-  home.packages = [
-    unstable-pkgs.spotify
-    unstable-pkgs.zoom-us
+  home.packages = with unstable-pkgs; [
+    spotify
+    zoom-us
   ];
 
   programs = {

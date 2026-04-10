@@ -60,27 +60,25 @@
             ];
         }
       );
-      darwin-configuration =
-        _:
-        {
-          # Necessary for using flakes on this system.
-          nix.settings.experimental-features = "nix-command flakes";
+      darwin-configuration = _: {
+        # Necessary for using flakes on this system.
+        nix.settings.experimental-features = "nix-command flakes";
 
-          users.users.${username} = {
-            name = username;
-            home = "/Users/${username}";
-          };
-
-          system = {
-            configurationRevision = self.rev or self.dirtyRev or null;
-            stateVersion = 6;
-            primaryUser = username;
-          };
-
-          nixpkgs = {
-            hostPlatform = darwinSystem;
-          };
+        users.users.${username} = {
+          name = username;
+          home = "/Users/${username}";
         };
+
+        system = {
+          configurationRevision = self.rev or self.dirtyRev or null;
+          stateVersion = 6;
+          primaryUser = username;
+        };
+
+        nixpkgs = {
+          hostPlatform = darwinSystem;
+        };
+      };
     in
     {
       formatter = forAllSystems (system: nixpkgs-unstable.legacyPackages.${system}.nixfmt);
@@ -128,7 +126,10 @@
             };
             homebrew = {
               enable = true;
-              casks = [ "ghostty" ];
+              casks = [
+                "ghostty"
+                "chromium"
+              ];
             };
           }
           {
