@@ -75,8 +75,8 @@
   hardware.nvidia = {
     modesetting.enable = true;
 
-    # Enable the open source kernel module
-    open = true;
+    # Disable the open source kernel module
+    open = false;
 
     # Enable nvidia settings panel
     nvidiaSettings = true;

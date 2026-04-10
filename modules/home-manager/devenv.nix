@@ -1,6 +1,6 @@
 {
   pkgs,
-  unfree-pkgs-unstable,
+  unfree-pkgs,
   ...
 }:
 let
@@ -14,7 +14,7 @@ let
     [
       gemini-cli
     ]
-    ++ (with unfree-pkgs-unstable; [
+    ++ (with unfree-pkgs; [
       claude-code
     ]);
   infra-packages = with pkgs; [

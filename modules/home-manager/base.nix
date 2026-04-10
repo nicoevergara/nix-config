@@ -3,12 +3,11 @@
   ...
 }:
 {
-  programs.alacritty = {
+  programs.ghostty = {
     enable = true;
+    enableZshIntegration = true;
     settings = {
-      terminal = {
-        shell = "${pkgs.zsh}/bin/zsh";
-      };
+      command = "${pkgs.zsh}/bin/zsh";
     };
   };
 

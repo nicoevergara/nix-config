@@ -182,6 +182,8 @@ in
     enable = true;
   };
 
+  environment.plasma6.excludePackages = with pkgs.kdePackages; [ kate ];
+
   # Enable sound.
   services.pipewire = {
     enable = true;

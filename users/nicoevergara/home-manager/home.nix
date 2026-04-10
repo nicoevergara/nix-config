@@ -13,7 +13,7 @@ in
 {
   home.packages =
     import "${modulesRootPath}/modules/home-manager/devenv.nix" {
-      inherit pkgs unfree-pkgs-unstable config;
+      inherit pkgs unfree-pkgs config;
     }
     ++ (with pkgs; [
       anki
