@@ -1,6 +1,6 @@
 # nix-config
 A repo to hold my Nix configs for my machines
 
-## NixOS folder
-Initially, these configs are for my personal laptop and home manager environment, 
-the latter which I intend to make compatible with darwin environments I also use.
+## Machines
+- [jay](./flake.nix) (Home server)
+- [Nicos-MacBookPro](./flake.nix) (Personal MacBook Pro)

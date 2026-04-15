@@ -6,4 +6,5 @@ in
   targets.darwin.copyApps.enable = false;
 
   home.file.".cursor/AGENTS.md".source = "${rootPath}/modules/llms/AGENTS.md";
+
 }

@@ -23,8 +23,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.home-manager.follows = "home-manager";
     };
-
-    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
   };
 
   outputs =
@@ -36,7 +34,6 @@
       plasma-manager,
       nix-darwin,
       mac-app-util,
-      nix-homebrew,
       ...
     }:
     let
@@ -46,18 +43,18 @@
         "x86_64-linux"
         "aarch64-darwin"
       ];
+      allowUnfreePackages = [
+        "spotify"
+        "zoom"
+        "claude-code"
+      ];
+
       forAllSystems = nixpkgs.lib.genAttrs systems;
       unstable-pkgs = forAllSystems (
         system:
         import nixpkgs-unstable {
           inherit system;
-          config.allowUnfreePredicate =
-            pkg:
-            builtins.elem (nixpkgs.lib.getName pkg) [
-              "spotify"
-              "zoom"
-              "claude-code"
-            ];
+          config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) allowUnfreePackages;
         }
       );
       darwin-configuration = _: {
@@ -111,28 +108,13 @@
       darwinConfigurations."Nicos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
         system = darwinSystem;
         specialArgs = {
-          inherit inputs;
+          inherit inputs username;
         };
         modules = [
           darwin-configuration
           mac-app-util.darwinModules.default
           home-manager.darwinModules.home-manager
-          nix-homebrew.darwinModules.nix-homebrew
-          {
-            nix-homebrew = {
-              enable = true;
-              enableRosetta = true;
-              user = username;
-            };
-            homebrew = {
-              enable = true;
-              casks = [
-                "ghostty"
-                "chromium"
-                "filen"
-              ];
-            };
-          }
+          ./users/${username}/homebrew/homebrew.nix
           {
             # Let Determinate Nix handle Nix config
             nix.enable = false;
@@ -143,10 +125,11 @@
                 mac-app-util.homeManagerModules.default
               ];
               extraSpecialArgs = {
-                inherit username;
-                isDarwin = true;
                 stable-pkgs = nixpkgs.legacyPackages.${darwinSystem};
                 unstable-pkgs = unstable-pkgs.${darwinSystem};
+                isDarwin = true;
+
+                inherit username;
               };
               users.${username} = import ./users/${username}/home-manager/home.nix;
             };

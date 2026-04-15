@@ -10,6 +10,7 @@ in
   imports = [
     "${modulesRootPath}/modules/home-manager/base.nix"
     "${modulesRootPath}/modules/home-manager/devenv.nix"
+    "${modulesRootPath}/modules/home-manager/linguistics.nix"
   ]
   ++ lib.optionals isDarwin [ ./darwin.nix ]
   ++ lib.optionals (!isDarwin) [ ./linux.nix ];
