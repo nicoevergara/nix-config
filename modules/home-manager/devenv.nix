@@ -46,6 +46,12 @@ let
         extensions = [ "nix" ];
       };
 
+      neovim = {
+        enable = true;
+        withRuby = false;
+        withPython3 = false;
+      };
+
       direnv = {
         enable = true;
         enableZshIntegration = true; # see note on other shells below
@@ -63,12 +69,11 @@ let
             name = "Nico Vergara";
             email = "me@nicoevergara.com";
           };
-          extraConfig = {
-            push.autoSetupRemote = true;
-            core = {
-              editor = "vim";
-            };
+          push.autoSetupRemote = true;
+          core = {
+            editor = "vim";
           };
+
         };
         ignores = [
           "*.DS_Store"
