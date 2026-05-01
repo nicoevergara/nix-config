@@ -1,0 +1,2 @@
+command = /etc/profiles/per-user/nicoevergara/bin/nu
+shell-integration = nushell

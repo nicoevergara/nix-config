@@ -28,7 +28,7 @@ let
         enable = true;
         enableZshIntegration = true;
         settings = {
-          command = "${stable-pkgs.zsh}/bin/zsh";
+          command = "${stable-pkgs.nushell}/bin/nu";
         };
       };
     };
@@ -41,7 +41,7 @@ let
       zed-editor = {
         enable = true;
         userSettings = {
-          terminal.shell.program = "${stable-pkgs.zsh}/bin/zsh";
+          terminal.shell.program = "${stable-pkgs.nushell}/bin/nu";
         };
         extensions = [ "nix" ];
       };
@@ -54,11 +54,11 @@ let
 
       direnv = {
         enable = true;
-        enableZshIntegration = true; # see note on other shells below
+        enableNushellIntegration = true; # see note on other shells below
         nix-direnv.enable = true;
       };
 
-      zsh = {
+      nushell = {
         enable = true;
       };
 
@@ -71,7 +71,7 @@ let
           };
           push.autoSetupRemote = true;
           core = {
-            editor = "vim";
+            editor = "nvim";
           };
 
         };
@@ -88,6 +88,8 @@ let
       };
       starship.enable = true;
     };
+
+    home.file.".config/ghostty/config.ghostty".source = ../ghostty/config.ghostty;
   };
 in
 lib.mkMerge [

@@ -9,6 +9,7 @@
       "filen"
       "whatsapp"
       "claude"
+      "betterdisplay"
     ];
   };
 }
