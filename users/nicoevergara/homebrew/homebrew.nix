@@ -10,6 +10,9 @@
       "whatsapp"
       "claude"
       "betterdisplay"
+      "protonvpn"
+      "brainfm"
+      "proton-meet"
     ];
   };
 }

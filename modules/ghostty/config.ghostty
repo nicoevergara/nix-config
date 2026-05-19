@@ -1,2 +1,2 @@
-command = /etc/profiles/per-user/nicoevergara/bin/nu
+command = /bin/zsh -l -c "exec /etc/profiles/per-user/nicoevergara/bin/nu"
 shell-integration = nushell

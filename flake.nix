@@ -114,7 +114,7 @@
           darwin-configuration
           mac-app-util.darwinModules.default
           home-manager.darwinModules.home-manager
-          ./users/${username}/homebrew/homebrew.nix
+          # ./users/${username}/homebrew/homebrew.nix
           {
             # Let Determinate Nix handle Nix config
             nix.enable = false;

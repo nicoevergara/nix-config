@@ -9,6 +9,6 @@
   ];
 
   programs = {
-    anki.enable = true;
+#    anki.enable = true;
   };
 }

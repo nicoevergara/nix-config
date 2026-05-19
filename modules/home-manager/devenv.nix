@@ -13,10 +13,12 @@ let
     statix
     deadnix
   ];
+
   ai-tooling-packages = with unstable-pkgs; [
     gemini-cli
     claude-code
   ];
+
   infra-packages = with stable-pkgs; [
     protobuf
     postgresql
@@ -50,6 +52,30 @@ let
         enable = true;
         withRuby = false;
         withPython3 = false;
+        initLua = builtins.readFile ../neovim/settings.lua;
+        extraPackages = with unstable-pkgs; [
+          # nix-related pkgs
+          nil
+          nixfmt
+          # lua-related pkgs
+          stylua
+          # rust-related pkgs
+          rustfmt
+          # python-related pkgs
+          isort
+          black
+        ];
+        plugins = with unstable-pkgs.vimPlugins; [
+          dropbar-nvim
+          nvim-lspconfig
+          blink-cmp
+          conform-nvim
+          (nvim-treesitter.withPlugins (p: [
+            p.nix
+            p.rust
+            p.lua
+          ]))
+        ];
       };
 
       direnv = {
@@ -60,6 +86,7 @@ let
 
       nushell = {
         enable = true;
+        extraConfig = builtins.readFile ../shells/configs/nushell/config.nu;
       };
 
       git = {
