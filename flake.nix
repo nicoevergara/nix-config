@@ -63,9 +63,13 @@
           config.allowUnfreePredicate = pkg: builtins.elem (nixpkgs.lib.getName pkg) allowUnfreePackages;
         }
       );
-      darwin-configuration = _: {
+      darwin-configuration = { pkgs, ... }: {
         # Necessary for using flakes on this system.
         nix.settings.experimental-features = "nix-command flakes";
+
+        fonts.packages = [
+          pkgs.maple-mono.NF
+        ];
 
         users.users.${username} = {
           name = username;

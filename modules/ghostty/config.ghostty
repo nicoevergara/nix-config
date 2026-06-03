@@ -1,2 +1,6 @@
 command = /bin/zsh -l -c "exec /etc/profiles/per-user/nicoevergara/bin/nu"
 shell-integration = nushell
+
+font-family = Maple Mono NF
+
+theme = Catppuccin Latte

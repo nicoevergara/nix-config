@@ -45,7 +45,11 @@ let
         userSettings = {
           terminal.shell.program = "${stable-pkgs.nushell}/bin/nu";
         };
-        extensions = [ "nix" "nil" "docker" ];
+        extensions = [
+          "nix"
+          "nil"
+          "docker"
+        ];
       };
 
       neovim = {
@@ -59,21 +63,40 @@ let
           nixfmt
           # lua-related pkgs
           stylua
+          lua-language-server
           # rust-related pkgs
           rustfmt
           # python-related pkgs
-          isort
-          black
+          ty
+          ruff
+          # typescript/javascript-related pkgs
+          typescript
+          typescript-language-server
+          # telescope dependencies (live_grep / find_files)
+          ripgrep
+          fd
         ];
         plugins = with unstable-pkgs.vimPlugins; [
           dropbar-nvim
           nvim-lspconfig
+          lazydev-nvim
           blink-cmp
           conform-nvim
+          neo-tree-nvim
+          mini-icons
+          catppuccin-nvim
+          plenary-nvim
+          telescope-nvim
+          telescope-fzf-native-nvim
+          claudecode-nvim
           (nvim-treesitter.withPlugins (p: [
             p.nix
             p.rust
             p.lua
+            p.python
+            p.typescript
+            p.javascript
+            p.tsx
           ]))
         ];
       };
