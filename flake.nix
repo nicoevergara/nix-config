@@ -13,6 +13,11 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    nix-homebrew = {
+      url = "github:zhaofengli/nix-homebrew";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     mac-app-util = {
       url = "github:hraban/mac-app-util";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,6 +38,7 @@
       home-manager,
       plasma-manager,
       nix-darwin,
+      nix-homebrew,
       mac-app-util,
       ...
     }:
@@ -114,7 +120,18 @@
           darwin-configuration
           mac-app-util.darwinModules.default
           home-manager.darwinModules.home-manager
-          # ./users/${username}/homebrew/homebrew.nix
+          nix-homebrew.darwinModules.nix-homebrew
+          {
+            nix-homebrew = {
+              # Install Homebrew under the default prefix
+              enable = true;
+
+              # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
+              enableRosetta = true;
+              user = username;
+            };
+          }
+          ./users/${username}/homebrew/homebrew.nix
           {
             # Let Determinate Nix handle Nix config
             nix.enable = false;
