@@ -27,6 +27,7 @@
       "google-gemini"
       "tableplus"
       "docker-desktop"
+      "proton-mail"
     ];
   };
 }

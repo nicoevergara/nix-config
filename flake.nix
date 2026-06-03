@@ -123,16 +123,7 @@
             mac-app-util.darwinModules.default
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
-            {
-              nix-homebrew = {
-                # Install Homebrew under the default prefix
-                enable = true;
-
-                # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-                enableRosetta = true;
-                user = username;
-              };
-            }
+            ./users/${username}/base.nix
             ./users/${username}/homebrew/homebrew.nix
             {
               # Let Determinate Nix handle Nix config
