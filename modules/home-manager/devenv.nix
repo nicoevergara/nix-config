@@ -45,7 +45,7 @@ let
         userSettings = {
           terminal.shell.program = "${stable-pkgs.nushell}/bin/nu";
         };
-        extensions = [ "nix" ];
+        extensions = [ "nix" "nil" "docker" ];
       };
 
       neovim = {

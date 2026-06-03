@@ -110,48 +110,84 @@
         };
       };
       # Build darwin flake using:
-      # $ darwin-rebuild build --flake .#Nicos-MacBook-Pro
-      darwinConfigurations."Nicos-MacBook-Pro" = nix-darwin.lib.darwinSystem {
-        system = darwinSystem;
-        specialArgs = {
-          inherit inputs username;
-        };
-        modules = [
-          darwin-configuration
-          mac-app-util.darwinModules.default
-          home-manager.darwinModules.home-manager
-          nix-homebrew.darwinModules.nix-homebrew
-          {
-            nix-homebrew = {
-              # Install Homebrew under the default prefix
-              enable = true;
+      # $ darwin-rebuild build --flake .#personal
+      # $ darwin-rebuild build --flake .#work
+      darwinConfigurations = {
+        personal = nix-darwin.lib.darwinSystem {
+          system = darwinSystem;
+          specialArgs = {
+            inherit inputs username;
+          };
+          modules = [
+            darwin-configuration
+            mac-app-util.darwinModules.default
+            home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
+            {
+              nix-homebrew = {
+                # Install Homebrew under the default prefix
+                enable = true;
 
-              # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
-              enableRosetta = true;
-              user = username;
-            };
-          }
-          ./users/${username}/homebrew/homebrew.nix
-          {
-            # Let Determinate Nix handle Nix config
-            nix.enable = false;
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              sharedModules = [
-                mac-app-util.homeManagerModules.default
-              ];
-              extraSpecialArgs = {
-                stable-pkgs = nixpkgs.legacyPackages.${darwinSystem};
-                unstable-pkgs = unstable-pkgs.${darwinSystem};
-                isDarwin = true;
-
-                inherit username;
+                # Apple Silicon Only: Also install Homebrew under the default Intel prefix for Rosetta 2
+                enableRosetta = true;
+                user = username;
               };
-              users.${username} = import ./users/${username}/home-manager/home.nix;
-            };
-          }
-        ];
+            }
+            ./users/${username}/homebrew/homebrew.nix
+            {
+              # Let Determinate Nix handle Nix config
+              nix.enable = false;
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                sharedModules = [
+                  mac-app-util.homeManagerModules.default
+                ];
+                extraSpecialArgs = {
+                  stable-pkgs = nixpkgs.legacyPackages.${darwinSystem};
+                  unstable-pkgs = unstable-pkgs.${darwinSystem};
+                  isDarwin = true;
+
+                  inherit username;
+                };
+                users.${username} = import ./users/${username}/home-manager/home.nix;
+              };
+            }
+          ];
+        };
+        work = nix-darwin.lib.darwinSystem {
+          system = darwinSystem;
+          specialArgs = {
+            inherit inputs username;
+          };
+          modules = [
+            darwin-configuration
+            mac-app-util.darwinModules.default
+            home-manager.darwinModules.home-manager
+            nix-homebrew.darwinModules.nix-homebrew
+            ./users/${username}/base.nix
+            ./users/${username}/homebrew/homebrew.nix
+            {
+              # Let Determinate Nix handle Nix config
+              nix.enable = false;
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                sharedModules = [
+                  mac-app-util.homeManagerModules.default
+                ];
+                extraSpecialArgs = {
+                  stable-pkgs = nixpkgs.legacyPackages.${darwinSystem};
+                  unstable-pkgs = unstable-pkgs.${darwinSystem};
+                  isDarwin = true;
+
+                  inherit username;
+                };
+                users.${username} = import ./users/${username}/home-manager/home.nix;
+              };
+            }
+          ];
+        };
       };
     };
 }

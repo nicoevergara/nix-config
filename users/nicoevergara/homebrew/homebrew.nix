@@ -1,4 +1,14 @@
 {
+  username,
+  ...
+}:{
+  nix-homebrew = {
+    enable = true;
+    enableRosetta = true;
+    autoMigrate = true;
+    user = username;
+  };
+
   homebrew = {
     enable = true;
     onActivation = {
@@ -13,6 +23,10 @@
       "protonvpn"
       "brainfm"
       "proton-meet"
+      "rectangle-pro"
+      "google-gemini"
+      "tableplus"
+      "docker-desktop"
     ];
   };
 }
