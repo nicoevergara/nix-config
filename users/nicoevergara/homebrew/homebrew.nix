@@ -1,7 +1,35 @@
 {
   username,
   ...
-}:{
+}:
+let
+  general-pkgs = [
+    "brainfm"
+    "whatsapp"
+    "betterdisplay"
+    "proton-meet"
+    "proton-mail"
+    "protonvpn"
+    "filen"
+    "whatsapp"
+    "betterdisplay"
+    "rectangle-pro"
+  ];
+
+  browser-pkgs = [
+    "zen"
+  ];
+
+  dev-pkgs = [
+    "google-gemini"
+    "claude"
+    "tableplus"
+    "docker-desktop"
+    "ghostty"
+  ];
+
+in
+{
   nix-homebrew = {
     enable = true;
     enableRosetta = true;
@@ -14,20 +42,6 @@
     onActivation = {
       cleanup = "zap";
     };
-    casks = [
-      "ghostty"
-      "filen"
-      "whatsapp"
-      "claude"
-      "betterdisplay"
-      "protonvpn"
-      "brainfm"
-      "proton-meet"
-      "rectangle-pro"
-      "google-gemini"
-      "tableplus"
-      "docker-desktop"
-      "proton-mail"
-    ];
+    casks = general-pkgs ++ browser-pkgs ++ dev-pkgs;
   };
 }
