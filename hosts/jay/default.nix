@@ -122,7 +122,7 @@ in
     };
 
     dnsmasq = {
-      enable = true;
+      enable = false;
       settings = {
         # DNS mappings to self-hosted services
         address = [
@@ -237,6 +237,12 @@ in
         package = pkgs.qemu_kvm;
         runAsRoot = true;
         swtpm.enable = true;
+      };
+    };
+
+    virtualbox = {
+      host = {
+        enable = true;
       };
     };
 

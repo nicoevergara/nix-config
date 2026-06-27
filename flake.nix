@@ -53,6 +53,7 @@
         "spotify"
         "zoom"
         "claude-code"
+        "nvidia-kernel-modules"
       ];
 
       forAllSystems = nixpkgs.lib.genAttrs systems;

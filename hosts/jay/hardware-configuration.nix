@@ -57,9 +57,6 @@
       enable = true;
     };
 
-    # Enable Nvidia Container Toolkit
-    nvidia-container-toolkit.enable = true;
-
     nvidia = {
       modesetting.enable = true;
 
@@ -80,6 +77,7 @@
     builtins.elem (lib.getName pkg) [
       "nvidia-x11"
       "nvidia-settings"
+      "nvidia-kernel-modules"
     ];
 
   services.xserver.videoDrivers = [ "nvidia" ];

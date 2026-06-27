@@ -33,6 +33,10 @@ let
           command = "${stable-pkgs.nushell}/bin/nu";
         };
       };
+
+      zen = {
+        enable = true;
+      };
     };
   };
 
@@ -139,7 +143,10 @@ let
       starship.enable = true;
     };
 
-    home.file.".config/ghostty/config.ghostty".source = ../ghostty/config.ghostty;
+    home.file.".config/ghostty/config.ghostty" = {
+      source = ../ghostty/config.ghostty;
+      force = true;
+    };
   };
 in
 lib.mkMerge [
